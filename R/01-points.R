@@ -82,8 +82,8 @@ m1 <- tm_basemap("CartoDB.PositronNoLabels") +
   tm_dots(
     fill = "purple", size = "count", fill_alpha = 0.4,
   size.legend = tm_legend(
-    title = "# of accidents", 
-    position = c(0.92, 1.05), bg.color = NA, frame = FALSE)) +
+    title = "# of accidents", text.size = 0.7, title.size = 0.7,
+    position = c(0.95, 1.0), bg.color = NA, frame = FALSE)) +
   tm_shape(mask) +
   tm_fill(col = bgcolor, fill_alpha = 1, size = 1, border.col = "grey20") +
   tm_title_out(
