@@ -12,4 +12,4 @@ My contributions to the #30DayMapChallenge 2025
 <img src="plots/03-polygons.png" width=500>
 
 ## Day 05 - Earth
-<img src="plots/03-earth.png" width=500>
+<img src="plots/05-earth.png" width=500>
