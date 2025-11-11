@@ -13,3 +13,7 @@ My contributions to the #30DayMapChallenge 2025
 
 ## Day 05 - Earth
 <img src="plots/05-earth.png" width=500>
+
+## Day 08 - Urban
+<img src="plots/08-urban-observable.png" width=500>
+
