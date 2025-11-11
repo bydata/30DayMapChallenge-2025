@@ -17,18 +17,10 @@ url <- "https://itiner-e.org/route-segments/download"
 df_roads <- st_read(url)
 st_crs(df_roads)
 
-
 # Which road types?
 df_roads |> 
   st_drop_geometry() |> 
   count(type)
-
-
-# Temporal dimension
-df_roads |> 
-  st_drop_geometry() |> 
-  ggplot(aes(lowerDate)) +
-  geom_histogram()
 
 
 df_roads |> 
