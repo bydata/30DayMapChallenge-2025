@@ -17,5 +17,8 @@ My contributions to the #30DayMapChallenge 2025
 ## Day 08 - Urban
 <img src="plots/08-urban-observable.png" width=500>
 
+## Day 10 - Air
+<img src="plots/10-air.png" width=500>
+
 ## Day 11 - Minimal map
 <img src="plots/11-minimal-map.png" width=500>
