@@ -22,3 +22,6 @@ My contributions to the #30DayMapChallenge 2025
 
 ## Day 11 - Minimal map
 <img src="plots/11-minimal-map.png" width=500>
+
+## Day 14 - OpenStreetMap
+<img src="plots/14-osm.png" width=500>
