@@ -25,3 +25,6 @@ My contributions to the #30DayMapChallenge 2025
 
 ## Day 14 - OpenStreetMap
 <img src="plots/14-osm.png" width=500>
+
+## Day 15 - Fire
+<img src="plots/15-fire.png" width=500>
