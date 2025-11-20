@@ -28,3 +28,6 @@ My contributions to the #30DayMapChallenge 2025
 
 ## Day 15 - Fire
 <img src="plots/15-fire.png" width=500>
+
+## Day 20 - Water
+<img src="plots/20-water.png" width=500>
