@@ -33,6 +33,7 @@ My contributions to the #30DayMapChallenge 2025
 <img src="plots/20-water.png" width=500>
 
 ## Day 21 - Icons
+<iframe width='100%' height='400px' src="https://api.mapbox.com/styles/v1/ansgarw/cmi9c14di003l01s6di1qd3x0.html?title=false&access_token=pk.eyJ1IjoiYW5zZ2FydyIsImEiOiJjbWhobXA0cGgwdHJhMmtyNGd2Zmg2dzVyIn0.g1hXKAmGdEOS5y1fpa1SYg&zoomwheel=false#14.56/50.92813/6.95227/0/69" title="Cologne Christmas Markets 2025" style="border:none;"></iframe>
 
 ## Day 22 - Natural Earth
 <img src="plots/22-natural-earth.png" width=500>
