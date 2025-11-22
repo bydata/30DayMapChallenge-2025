@@ -1,0 +1,39 @@
+<svg
+  width="38"
+  height="38"
+  viewBox="0 0 128 128"
+  xmlns="http://www.w3.org/2000/svg"
+>
+
+  <!-- Flat icon-style Christmas tree, transparent background -->
+
+  <!-- Tree body (three flat layers) -->
+  <polygon points="64,12 26,56 102,56" fill="#2ECC71" />
+  <polygon points="64,34 20,82 108,82" fill="#2ECC71" />
+  <polygon points="64,60 14,112 114,112" fill="#2ECC71" />
+
+  <!-- Trunk -->
+  <rect x="54" y="96" width="20" height="20" rx="3" fill="#27AE60" />
+
+  <!-- Star -->
+  <polygon
+    points="
+      64,4
+      68,12
+      77,12
+      70,17
+      73,25
+      64,20
+      55,25
+      58,17
+      51,12
+      60,12
+    "
+    fill="#27AE60"
+  />
+
+  <!-- Accent bands -->
+  <path d="M30 70 Q 64 82 98 70 L 98 74 Q 64 86 30 74 Z" fill="#27AE60" />
+  <path d="M24 92 Q 64 104 104 92 L 104 96 Q 64 108 24 96 Z" fill="#27AE60" />
+
+</svg>
