@@ -31,3 +31,9 @@ My contributions to the #30DayMapChallenge 2025
 
 ## Day 20 - Water
 <img src="plots/20-water.png" width=500>
+
+## Day 21 - Icons
+
+## Day 22 - Natural Earth
+<img src="plots/22-natural-earth.png" width=500>
+

@@ -3,83 +3,85 @@ library(sf)
 library(ggtext)
 library(here)
 library(rnaturalearth)
-library(rnaturalearthdata)
 
 europe <- ne_countries(scale = 10, continent = "Europe", returnclass = "sf")
-europe <- select(europe, name, geometry)
+europe <- select(europe, name, geometry) |> 
+  st_transform(crs = 25832)
 germany <- filter(europe, name == "Germany")
 
 # Find neighbor countries (must be 9)
 neighbors <- st_touches(germany, europe, sparse = FALSE)
-df_neighbor_countries <- europe[as.logical(neighbors), ]
+df_neighbor_countries <- europe[neighbors, ]
 nrow(df_neighbor_countries)
 
-# Extract the border to each neighbor country
-extract_border <- function(country, neighbor_country) {
-  country_boundary <- st_boundary(country)
-  neighbor_boundary <- st_boundary(neighbor_country)
-  border <- st_intersection(country_boundary, neighbor_boundary)
-  border
-}
+# Create a fine grid of POLYGONS within Germany (not points)
+grid_spacing <- 2000  # 2km spacing
 
-borders <- map_dfr(
-  seq_len(nrow(df_neighbor_countries)), 
-  function(i) extract_border(germany, st_geometry(df_neighbor_countries[i, ]))
+grid_cells <- st_make_grid(
+  germany,
+  cellsize = grid_spacing,
+  what = "polygons"
 ) |> 
-  select(-name) |> 
-  add_column(name = df_neighbor_countries$name)
-
-
-ggplot(borders) +
-  geom_sf(aes(col = name))
-
-
-## Create grid
-germany_bbox <- st_bbox(germany)
-grid <- st_make_grid(germany, cellsize = 0.075, what = "polygons", square = FALSE)
-germany_grid <- st_intersection(grid, germany)
-# germany_grid <- st_as_sf(germany_grid)
-
-ggplot(germany_grid) +
-  geom_sf(size = 0.1)
-
-# Find the closest country to each cell
-find_closest_country <- function(cell, borders) {
-  distances <- st_distance(cell, borders)
-  min_idx <- which.min(distances)
-  closest_country <- borders$name[min_idx]
-  closest_country
-}
-
-library(mirai)
-daemons(6)
-
-closest_country <- map_chr(
-  seq_along(germany_grid),
-  in_parallel(
-    function(i) {
-      distances <- sf::st_distance(germany_grid[i, ], borders)
-      min_idx <- which.min(distances)
-      closest_country <- borders$name[min_idx]
-      closest_country
-    },
-    germany_grid = germany_grid,
-    borders = borders
-  )
-)
-daemons(0)
-
-
-grid_results <- germany_grid |> 
   st_as_sf() |> 
-  rename(geometry = x) |> 
-  add_column(neighbor = closest_country)
-write_rds(grid_results, here("data", "grid-results.rds"))
+  st_filter(germany) |> 
+  mutate(cell_id = row_number())
 
-df_regions <- grid_results |> 
-  group_by(neighbor) |> 
-  summarize(geometry = st_union(geometry))
-nrow(df_regions)
+# For each grid cell, calculate distance to each country's border
+grid_with_country <- map_dfr(
+  unique(df_neighbor_countries$name),
+  function(country_name) {
+  country <- filter(df_neighbor_countries, name == country_name)
+  
+  # Get the shared border
+  border <- st_intersection(st_boundary(germany), st_boundary(country))
+  
+  # Calculate distance from each grid cell centroid to this border
+  distances <- st_distance(st_centroid(grid_cells), border)
+  
+  grid_cells |> 
+    mutate(
+      country = country_name,
+      distance = as.numeric(distances)
+    )
+}) |> 
+  group_by(cell_id) |> 
+  slice_min(distance, n = 1) |> 
+  ungroup()
+
+# Dissolve grid cells by country
+df_regions <- grid_with_country |> 
+  group_by(country) |> 
+  summarize(geometry = st_union(x)) |> 
+  st_intersection(germany) 
+
+# Transform back to EPSG:4326
+df_regions <- st_transform(df_regions, crs = 4326)
+germany <- st_transform(germany, crs = 4326)
+europe <- st_transform(europe, crs = 4326)
+
+country_colors <- c(
+  "France" = "#80CBC4",      # Light teal
+  "Denmark" = "#FF7F66",  # Coral
+  "Belgium" = "#B2DFDB",      # Very light teal
+  "Luxembourg" = "#FF9E8A",   # Light coral
+  "Austria" = "#4DB6AC",       # Medium teal
+  "Switzerland" = "#E85D3F",  # Dark coral
+  "Netherlands" = "#00796B",      # Dark teal
+  "Czechia" = "#FFA99A",      # Medium-light coral
+  "Poland" = "#26A69A"        # Medium-dark teal
+)
+
+country_colors <- c(
+  "Denmark" = "#80CBC4",      # Light teal
+  "Netherlands" = "#B08EA2",  # Mauve
+  "Belgium" = "#B2DFDB",      # Very light teal
+  "Luxembourg" = "#C9B3C0",   # Light mauve
+  "France" = "#4DB6AC",       # Medium teal
+  "Switzerland" = "#8B6B82",  # Dark mauve
+  "Austria" = "#00796B",      # Dark teal
+  "Czechia" = "#DCC9D5",      # Pale mauve
+  "Poland" = "#26A69A"        # Medium-dark teal
+)
 
 ggplot() +
   geom_sf(
@@ -89,40 +91,39 @@ ggplot() +
   ) +
   geom_sf(
     data = df_regions,
-    aes(fill = neighbor),
-  col = "white", linewidth = 0.1) +
+    aes(fill = country),
+    col = "white", linewidth = 0.2) +
   geom_sf(
     data = germany,
     fill = NA, col = "white", linewidth = 0.2
   ) +
   geom_sf_label(
     data = df_regions,
-    aes(label = toupper(neighbor), fill = neighbor,
-    col = ifelse(neighbor %in% c("Belgium", "Czechia"), "black", "white")
+    aes(label = toupper(country), fill = country,
     ),
-    label.size = 0.1,
-    family = "Source Sans Pro SemiBold"
+    fill = "black", col = "white", label.size = 0,
+    family = "Source Sans Pro SemiBold", size = 3
   ) +
   scale_color_identity() +
-  # paletteer::scale_fill_paletteer_d("MoMAColors::Rattner") +
-  paletteer::scale_fill_paletteer_d("ggsci::light_uchicago") +
+  # paletteer::scale_fill_paletteer_d("ggsci::light_uchicago") +
+  scale_fill_manual(values = country_colors) +
   coord_sf(xlim = c(5.5, 15.5), ylim = c(47.5, 55)) +
   guides(fill = "none", color = "none") +
   labs(
-    title = "Which neighboring country is closest to you?",
-    subtitle = "",
-    caption = "**Source:** Natural Earth. **Visualization:** Ansgar Wolsing (original idea by @JulesGrandin on Twitter Nov 03, 2022)"
+    title = "Nearest Neighbors",
+    subtitle = "Each region shows the closest neighboring country border",
+    caption = "**Source:** Natural Earth.
+    **Visualization:** Ansgar Wolsing (original idea by @JulesGrandin on Twitter Nov 03, 2022)"
   ) +
-  theme_void(base_family = "Source Sans Pro", paper = "#F5F5F5") +
+  theme_void(base_family = "Source Sans Pro", base_size = 11) +
   theme(
-    plot.title = element_text(family = "Source Sans Pro SemiBold", hjust = 0.5, size = 20),
-    plot.subtitle = element_textbox(width = 0.95, hjust = 0.5),
-    plot.caption = element_textbox(width = 0.95, hjust = 0.5, size = 8.5),
-    plot.margin = margin(4, 4, 4, 4)
+    plot.background = element_rect(fill = "#F5F5F5", color = NA),
+    plot.title = element_text(
+      family = "Source Sans Pro SemiBold", hjust = 0.5, size = 24),
+    plot.subtitle = element_textbox(hjust = 0.5, width = 0.95, halign = 0.5),
+    plot.caption = element_textbox(
+      width = 0.95, hjust = 0.5, size = 8.5, lineheight = 1.15,
+      margin = margin(t = 10)),
+    plot.margin = margin(0, 0, 0, 0)
   )
-ggsave(here("plots", "22-natural-earth.png"), width = 6, height = 8)
-
-
-#' ggsci::light_uchicago
-#' ggthemes::few_Medium
-
+ggsave(here("plots", "22-natural-earth.png"), width = 4, height = 6)
