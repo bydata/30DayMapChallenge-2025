@@ -1,6 +1,7 @@
 library(tidyverse)
 library(sf)
 library(ggtext)
+library(magick)
 library(here)
 
 #' Source: Federal Agency for Cartography and Geodesy
@@ -27,11 +28,16 @@ bbox <- st_bbox(df_gemeinden)
 min_inhabitants <- min(df_gemeinden$EWZ)
 max_inhabitants <- max(df_gemeinden$EWZ)
 
+
+# Function to create plots with consistent dimensions and scales
 create_plot <- function(df, density = 0.05) {
   stopifnot(density > 0 & density <= 1)
-  df |> 
+  df <- df |> 
     slice_max(prop = density, order_by = EWZ) |>
-    mutate(NAME = fct_reorder(NAME, -EWZ)) |> 
+    mutate(NAME = fct_reorder(NAME, -EWZ)) 
+  n_cities <- nrow(df)
+  
+  df |> 
     ggplot() +
     geom_sf_text(
       aes(label = toupper(NAME), size = EWZ, alpha = EWZ), 
@@ -47,18 +53,25 @@ create_plot <- function(df, density = 0.05) {
     guides(size = "none", alpha = "none") +
     labs(
       title = "Germany by Names",
-      caption = "The top 5 percent of municipalities by inhabitants. 
-        **Source:** Federal Agency for Cartography and Geodesy 
-      (Datenlizenz Deutschland). **Visualization:** Ansgar Wolsing."
+      subtitle = sprintf(
+        "<span style='font-size: 40px; font-family:\"Roboto Mono Medium\"'>%d</span>
+          <br>municipalities ordered by<br>number of inhabitants",
+        n_cities),
+      caption = "**Source:** Federal Agency for Cartography and Geodesy 
+      (Datenlizenz Deutschland). **Visualization:** Ansgar Wolsing.<br>"
     ) +
-    theme_void(base_family = "Inter 18pt", paper = "#27233A", ink = "white") +
+    theme_void(base_family = "Roboto Condensed", paper = "#27233A", ink = "white") +
     
     theme(
       plot.title = element_text(
-        family = "Roboto Condensed Medium Italic", hjust = 0.5, size = 32),
+        family = "Roboto Slab Medium", hjust = 0.5, size = 36),
+      plot.subtitle = element_markdown(
+        size = 14, hjust = 0.5, halign = 0.5, color = "#ADABBD",
+        margin = margin(t = 16)),
       plot.caption = element_textbox(
-        width = 1, hjust = 0.5, lineheight = 1.2),
-      plot.margin = margin(4, 4, 8, 4)
+        width = 1, hjust = 0.5, lineheight = 1.2, size = 11,
+        margin = margin(b = 8)),
+      plot.margin = margin(4, 4, 4, 4)
     )
 }
 
@@ -68,46 +81,76 @@ if (!dir.exists(plot_output_path)) {
   dir.create(plot_output_path)
 }
 
+plot_width <- 5
+plot_height <- 5/6.5 * 8
+plot_dpi <- 200
 
-# Create one frame building up the 10 largest cities
-
-largest_cities_names <- df_gemeinden |> 
+# Create one frame building up the n largest cities
+n_cities <- 50
+# use NNID to avoid plotting multiple municipalities with the same name
+largest_cities_id <- df_gemeinden |> 
   st_drop_geometry() |> 
-  slice_max(order_by = EWZ, n = 10) |> 
-  pull(NAME)
-length(largest_cities_names)
+  slice_max(order_by = EWZ, n = n_cities, with_ties = FALSE) |> 
+  pull(NNID)
+length(largest_cities_id)
 
 walk(
-  seq_along(largest_cities_names),
+  seq_along(largest_cities_id),
   function(i) {
     p <- df_gemeinden |> 
-      filter(NAME %in% largest_cities_names[1:i]) |> 
+      filter(NNID %in% largest_cities_id[1:i]) |> 
       create_plot(density = 1)
-    filename <- sprintf("24-places-cities-%d.png", i)
-    ggsave(here(plot_output_path, filename), width = 6.5, height = 8)
-  }) 
+    filename <- sprintf("24-places-cities-%04d.png", i)
+    ggsave(
+      here(plot_output_path, filename), 
+      width = plot_width, height = plot_height, dpi = plot_dpi,
+      scale = 300 / plot_dpi
+    )
+  }
+) 
 
+# Build the frames based on proportion of largest cities
+nrow(df_gemeinden)
+cities_prop_steps <- c(seq(0.01, 0.1, 0.0025), seq(0.125, 0.25, 0.025), seq(0.3, 1, 0.1))
+floor(cities_prop_steps * nrow(df_gemeinden))
 
-p <- create_plot(df_gemeinden, density = 1)
-ggsave(here("plots", "24-places", "24-places-100.png"), width = 6.5, height = 8)
+walk(
+  cities_prop_steps,
+  function(prop) {
+    p <- df_gemeinden |> 
+      slice_max(order_by = EWZ, prop = prop, with_ties = FALSE) |> 
+      create_plot(density = 1)
+    filename <- sprintf("24-places-prop-%s.png", prop)
+    ggsave(
+      here(plot_output_path, filename), 
+      width = plot_width, height = plot_height, dpi = plot_dpi,
+      scale = 300 / plot_dpi
+    )
+  }
+) 
 
-p <- create_plot(df_gemeinden, density = 0.2)
-ggsave(here("plots", "24-places-020.png"), width = 6.5, height = 8)
+# Read the frames
+png_files_cities <- list.files(
+  path = plot_output_path,
+  pattern = ".*cities.*\\.png$",
+  full.names = TRUE
+)
+png_files_prop <- list.files(
+  path = plot_output_path,
+  pattern = ".*prop.*\\.png$",
+  full.names = TRUE
+)
+png_files <- c(png_files_cities, png_files_prop, 
+  # repeat the last frame
+  rep(png_files_prop[length(png_files_prop)], 10)
+)
 
-p <- create_plot(df_gemeinden, density = 0.1)
-ggsave(here("plots", "24-places-010.png"), width = 6.5, height = 8)
+img_sequence <- image_read(png_files)
 
-p <- create_plot(df_gemeinden, density = 0.05)
-ggsave(here("plots", "24-places-005.png"), width = 6.5, height = 8)
-
-p <- create_plot(df_gemeinden, density = 0.025)
-ggsave(here("plots", "24-places-0025.png"), width = 6.5, height = 8)
-
-p <- create_plot(df_gemeinden, density = 0.01)
-ggsave(here("plots", "24-places-001.png"), width = 6.5, height = 8)
-
-p <- create_plot(df_gemeinden, density = 0.005)
-ggsave(here("plots", "24-places-0005.png"), width = 6.5, height = 8)
-
-p <- create_plot(df_gemeinden, density = 0.001)
-ggsave(here("plots", "24-places-0001.png"), width = 6.5, height = 8)
+# Write the GIF
+img_sequence |> 
+  image_animate(
+    fps = 10,
+    loop = 0
+  ) |> 
+  image_write(path = here("plots", "24-places.gif"))
