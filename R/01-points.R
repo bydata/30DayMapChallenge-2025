@@ -3,7 +3,6 @@ library(sf)
 library(here)
 library(tmap)
 library(osmdata)
-# library(tmaptools)
 
 #' Source: Unfallatlas, Statistisches Bundesamt
 #' https://unfallatlas.statistikportal.de/
@@ -42,9 +41,6 @@ city_center <- st_transform(city_center, 25832)
 city_center_area <- st_buffer(city_center, dist = 2500)
 
 df_unfallorte_filtered <- df_unfallorte_filtered |> 
-  # filter(IstPKW == 1 & IstRad == 1) |> 
-  # 8 = Leaving the carriageway to the right
-  # filter(UART %in% c(5, 8)) |> 
   mutate(Severity = factor(UKATEGORIE, levels = 1:3, labels = c("Deadly", "Severe injuries", "Light injuries")))
 
 # Filter the accidents within the city center area
@@ -58,7 +54,7 @@ df_unfallorte_filtered_innercity |>
   summarize(across(starts_with("Ist"), sum))
 
 # Create a mask to hide basemap
-mask_bbox <- st_as_sfc(st_bbox(boundaries) + c(-0.05, -0.05, 0.05, 0.05)) # expand a bit
+mask_bbox <- st_as_sfc(st_bbox(boundaries) + c(-0.05, -0.05, 0.05, 0.05))
 mask <- st_difference(mask_bbox, city_center_area)
 
 # Create a grid to aggregate close accident locations
@@ -70,7 +66,7 @@ hex_counts <- st_intersects(hex_grid, df_unfallorte_filtered_innercity)
 hex_df <- st_sf(
   geometry = hex_grid,
   count = lengths(hex_counts)
-) %>%
+) |> 
   filter(count > 0)
 # Check number of accidents in both dataframes
 sum(hex_df$count) == nrow(df_unfallorte_filtered_innercity)
@@ -99,9 +95,9 @@ m1 <- tm_basemap("CartoDB.PositronNoLabels") +
     just = "left", padding.left = 0
   ) +
   tm_credits(
-    text = "Data: Stadt Köln, OpenStreetMap, CartoDB. Visualization: Ansgar Wolsing",
-    position = c(0.5, 0),
-    size = 0.6, just = "left"
+    text = "Data: Unfallatlas / Statistisches Bundesamt, OpenStreetMap, CartoDB. Visualization: Ansgar Wolsing",
+    position = c(0.3, 0),
+    size = 0.6, just = "right"
   ) +
   tm_layout(
     frame = FALSE, 
