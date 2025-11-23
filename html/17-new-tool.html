@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Bike Accidents with Injuries in Cologne 2024</title>
+<meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no">
+<link href="https://api.mapbox.com/mapbox-gl-js/v3.15.0/mapbox-gl.css" rel="stylesheet">
+<script src="https://api.mapbox.com/mapbox-gl-js/v3.15.0/mapbox-gl.js"></script>
+<style>
+body { margin: 0; padding: 0; }
+#map { position: absolute; top: 0; bottom: 0; width: 100%; }
+</style>
+</head>
+<body>
+<div id="map"></div>
+<script>
+  mapboxgl.accessToken = 'pk.eyJ1IjoiYW5zZ2FydyIsImEiOiJjbWhobXA0cGgwdHJhMmtyNGd2Zmg2dzVyIn0.g1hXKAmGdEOS5y1fpa1SYg';
+  const map = new mapboxgl.Map({
+    container: 'map', 
+    center: [6.9557065, 50.9412784], //
+    style: 'mapbox://styles/ansgarw/cmiauoiqy005v01s63ilw3yub',  
+    zoom: 11 // starting zoom
+  });
+
+    // Our custom layers
+  const layers = [ 'unfallorte-koeln-rad-agg-au22jf']
+
+  // Iterate over each layer and add our interactions
+  layers.forEach((layer, index) => {
+    
+        // Add Click interaction
+        map.addInteraction(`click-marker-${index}`, {
+            type: 'click',
+            target: { layerId: layer },
+            handler: (e) => {
+                const popup = new mapboxgl.Popup({ offset: [0, -15] })
+            .setLngLat(e.feature.geometry.coordinates)
+            .setHTML(
+                `<h3>${Math.round(1000*e.feature.properties.lat) / 1000}°N, ${Math.round(1000*e.feature.properties.lon) / 1000}°E</h3>
+                <p>${e.feature.properties.count} bike accident(s)</p>`
+            )
+            .addTo(map);
+            }
+        });
+
+        // Add mouse-enter interaction
+        map.addInteraction(`mouse-enter-marker-${index}`, {
+            type: 'mouseenter',
+            target: { layerId: layer },
+            handler: (e) => {
+                map.getCanvas().style.cursor = 'pointer';
+            }
+        });
+
+        map.addInteraction(`mouse-leave-marker-${index}`, {
+            type: 'mouseleave',
+            target: { layerId: layer },
+            handler: (e) => {
+                map.getCanvas().style.cursor = '';
+            }
+        });
+
+  })
+
+</script>
+
+</body>
+</html>
