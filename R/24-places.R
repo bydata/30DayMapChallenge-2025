@@ -154,3 +154,12 @@ img_sequence |>
     loop = 0
   ) |> 
   image_write(path = here("plots", "24-places.gif"))
+
+# Write video
+img_sequence |> 
+  image_animate(
+    fps = 10,
+    loop = 0
+  ) |> 
+  image_write_video(
+    here("plots", "24-places.mp4"), framerate = 10)
