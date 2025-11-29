@@ -105,4 +105,4 @@ p <- ggplot() +
       size = 18, margin = margin(b = 4)),
     plot.title.position = "panel"
   )
-ggsave(here("plots", "28-black.png"), width = 6, height = 3)
+ggsave(here("plots", "28-black.png"), width = 5.7, height = 3, bg = fill_dark_gradient)
