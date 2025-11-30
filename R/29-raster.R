@@ -100,9 +100,9 @@ p <- ggplot() +
   theme(
     plot.title = element_text(
       family = "Source Sans Pro SemiBold", size = 18,
-      margin = margin(t = 4, l = 4, r = 4, b = 4)),
+      margin = margin(t = 6, l = 4, r = 4, b = 2)),
     plot.subtitle = element_textbox(
-      width = 0.9, margin = margin(t = 4, l = 4, r = 4, b = 4)),
+      width = 0.9, lineheight = 1.2, margin = margin(t = 4, l = 4, r = 4, b = 4)),
     plot.caption = element_textbox(
       width = 1, margin = margin(t = 4, l = 4, r = 4, b = 2))
   )
