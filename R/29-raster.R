@@ -5,6 +5,7 @@ library(ggspatial)
 library(here)
 library(patchwork)
 library(ggtext)
+library(sf)
 
 # Define WMS parameters
 wms_url <- "https://www.wms.nrw.de/umwelt/laerm"
@@ -61,32 +62,62 @@ get_wms_layer <- function(layer_id, wms_url, bbox, crs, width = 2076, height = 1
 
 # Download the road noise raster
 road_noise_raster <- get_wms_layer("STR_DEN", wms_url, bbox, crs)
+ext(road_noise_raster) <- ext_obj
+plot(road_noise_raster)
+
+road_noise_raster_flipped <- flip(road_noise_raster, direction = "vertical")
+plot(road_noise_raster_flipped)
+
+#' {ggspatial} issue: 
+#' annotation_map_tile glitches when working with CRS other than EPSG:3857
+#' https://github.com/paleolimbot/ggspatial/issues/89
+road_noise_raster_flipped <- project(road_noise_raster_flipped, "EPSG:3857")
+plot(road_noise_raster_flipped)
+
+# points_sf <- as.points(road_noise_raster, values = TRUE, na.rm = TRUE) |> st_as_sf(crs = crs)
+# summary(points_sf$lyr.4)
+# points_sf_filtered <- points_sf |> 
+#   filter(lyr.4 == 255) |> 
+#   # calculate color values
+#   mutate(color = rgb(lyr.1, lyr.2, lyr.3, maxColorValue = 255))
+
+# points_sf_filtered <- st_transform(points_sf_filtered, crs = "EPSG:3857")
+# st_crs(points_sf_filtered)
+
+# ggplot(points_sf_filtered) + geom_sf(aes(color = color)) + scale_color_identity()
 
 # Convert to data frame for plotting
-rast_df <- as.data.frame(road_noise_raster, xy = TRUE)
+crs(road_noise_raster_flipped)
+ext(road_noise_raster_flipped)
+df_raster <- as.data.frame(road_noise_raster_flipped, xy = TRUE) |> 
+  # keep only the values with maximum alpha values
+  filter(lyr.4 == 255) |> 
+  # calculate color values
+  mutate(color = rgb(lyr.1, lyr.2, lyr.3, maxColorValue = 255))
 
-# Filter out white/near-white pixels (all RGB > 250)
-if (ncol(rast_df) >= 5) { 
-  color_cols <- names(rast_df)[3:5]
-  rast_df <- rast_df %>%
-    filter(!(get(color_cols[1]) > 250 & 
-             get(color_cols[2]) > 250 & 
-             get(color_cols[3]) > 250))
-}
+ggplot(df_raster) + 
+  geom_raster(aes(x, y, fill = color)) +
+  scale_fill_identity()
 
 
+bgcolor <- "#090909"
 p <- ggplot() +
-  annotation_map_tile(type = "cartodark", zoomin = 1, progress = "none") +
+  annotation_map_tile(
+    type = "cartodark", zoomin = 1, 
+    forcedownload = TRUE,
+    progress = "none",
+    alpha = 1
+    ) +
   geom_raster(
-    data = rast_df, 
-    aes(
-      x = x, y = y,
-      fill = rgb(rast_df[[3]], rast_df[[4]], rast_df[[5]], maxColorValue = 255)),
+    data = df_raster, 
+    aes(x, y, fill = color),
     interpolate = TRUE,
     alpha = 0.8
   ) +
   scale_fill_identity() +
-  coord_sf(crs = crs, expand = FALSE) +
+  coord_sf(
+    ylim = c(6593000, 6624000),
+    crs = "EPSG:3857", expand = FALSE) +
   labs(
     title = "Road Noise Pollution in the Cologne Area",
     subtitle = "24-hour LDEN noise levels from major and urban road traffic, 
@@ -96,7 +127,7 @@ p <- ggplot() +
       (dl-zero-de/2.0).
       Basemap: CartoDB. Visualization: Ansgar Wolsing"
   ) +
-  theme_void(base_family = "Source Sans Pro", paper = "#303030", ink = "white") +
+  theme_void(base_family = "Source Sans Pro", paper = bgcolor, ink = "white") +
   theme(
     plot.title = element_text(
       family = "Source Sans Pro SemiBold", size = 18,
@@ -149,15 +180,15 @@ p_legend <- ggplot() +
   theme_void(base_family = "Source Sans Pro", paper = NA) +
   theme(
     legend.position = c(0.5, 0.5),
-    legend.background = element_rect(fill = alpha("#303030", 0.4), color = "blue"),
+    legend.background = element_rect(fill = alpha(bgcolor, 0.4), color = "blue"),
     legend.text = element_text(color = "white", size = 8),
     legend.title = element_text(color = "white", size = 10, face = "bold"),
     legend.key.height = unit(4, "mm")
   )
 
-p + inset_element(p_legend, left = 0.08, bottom = 0.1, right = 0.28, top = 0.3, align_to = "full") +
+p_combined <- p + inset_element(p_legend, left = 0.08, bottom = 0.1, right = 0.28, top = 0.3, align_to = "full") +
   plot_annotation(
     theme = theme(
-      plot.background = element_rect(fill = "#303030", color = "#303030"),
+      plot.background = element_rect(fill = bgcolor, color = bgcolor),
       plot.margin = margin(0, 0, 0, 0)))
-ggsave(here("plots", "29-raster.png"), width = 8, height = 5, dpi = 300, bg = "#303030")
+ggsave(here("plots", "29-raster.png"), width = 8, height = 5, dpi = 500, bg = bgcolor)
