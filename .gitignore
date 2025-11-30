@@ -6,3 +6,9 @@ data/gruenflaechenkataster-koeln/
 .DS_Store
 R/.Rhistory
 plots/24-places/*
+data/gn250.utm32s.csv/*
+data/gn250.utm32s.csv.zip
+data/EMODnet/*
+data/unfallorte-koeln-rad-agg.csv
+data/26-transport/*
+rosm.cache/*
