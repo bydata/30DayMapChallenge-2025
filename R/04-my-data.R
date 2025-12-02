@@ -61,7 +61,7 @@ df_combined <- df_activities |>
 
 bbox <- st_bbox(df_tracks)
 
-df_combined_slice <- df_combined[1:(25 * nrow(df_points_sampled)), ]
+# df_combined_slice <- df_combined[1:(25 * nrow(df_points_sampled)), ]
 df_combined_slice <- df_combined
 
 
@@ -79,14 +79,14 @@ p <- df_combined_slice |>
     aes(
       x = bbox["xmin"], y = bbox["ymin"],
       label = sprintf(
-        "<b style='font-size: 36pt'>Run</b> <b style='font-size: 60pt; color:%s'>#%d</b><br>on %s", 
+        "<b style='font-size: 36pt'>Run</b> <b style='font-size: 50pt; color:%s'>#%d</b><br>on %s", 
         highlight_color, run_number, format(start_date, "%B %d"))
     ),
     color = "#C6C4E8",
     nudge_x = 0.02 * (bbox["xmax"] - bbox["xmin"]),
     nudge_y = 0.2 * (bbox["ymax"] - bbox["ymin"]),
     hjust = 0, 
-    fill = NA, label.size = 0, family = "Fira Sans", lineheight = 1, size = 6
+    fill = NA, label.size = 0, family = "Fira Sans", lineheight = 1, size = 5.5
   ) +
   geom_sf(
     col = bgcolor, size = 10
@@ -107,16 +107,15 @@ p <- df_combined_slice |>
     ),
     plot.subtitle = element_text(
       hjust = 0.5, margin = margin(t = 0)),
-    plot.caption = element_markdown(hjust = 0, lineheight = 1.2),
+    plot.caption = element_markdown(hjust = 0.5, lineheight = 1.2),
     plot.margin = margin(4, 4, 4, 4)
   )
 
 p_anim <- p +
   transition_states(state_id) +
-  # ease_aes("linear")
-  ease_aes("cubic-in-out")
+  ease_aes("linear")
 
 animate(
-  p_anim, fps = 10, duration = 120, end_pause = 0, rewind = FALSE,
-  width = 400, height = 395, scale = 1.5, units = "px", res = 100, bg = fill_linear_gradient)
+  p_anim, fps = 10, duration = 60, end_pause = 0, rewind = FALSE,
+  width = 400, height = 395, scale = 1.5, units = "px", res = 100)
 anim_save(here("plots", "04-my-data.gif"))
