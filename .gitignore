@@ -12,3 +12,14 @@ data/EMODnet/*
 data/unfallorte-koeln-rad-agg.csv
 data/26-transport/*
 rosm.cache/*
+data/dgm1000.utm32s.xyzascii/*
+data/dgm1000.utm32s.xyzascii.zip
+data/Grosstektonik-Ruhrgebiet_EPSG25832_Geodatabase.zip
+data/Grosstektonik-Ruhrgebiet_EPSG25832_Geodatabase/*
+data/HDX/*
+data/ISRK10KO_EPSG25832_Geodatabase/*
+data/ISRK10KO_EPSG25832_Geodatabase.zip
+data/ISRK10KO_EPSG25832_Shape/*
+data/ISRK10KO_EPSG25832_Shape.zip
+data/running.gpx
+data/grid-results.rds
