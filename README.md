@@ -11,8 +11,14 @@ My contributions to the #30DayMapChallenge 2025
 ## Day 03 - Polygons
 <img src="plots/03-polygons.png" width=500>
 
+## Day 04 - My data
+<img src="plots/04-my-data.gif" width=400>
+
 ## Day 05 - Earth
 <img src="plots/05-earth.png" width=500>
+
+## Day 07 - Accessibility
+<img src="plots/07-accessibility.png" width=500>
 
 ## Day 08 - Urban
 <img src="plots/08-urban-observable.png" width=500>
@@ -29,6 +35,9 @@ My contributions to the #30DayMapChallenge 2025
 ## Day 15 - Fire
 <img src="plots/15-fire.png" width=500>
 
+## Day 17 - A new tool
+<img src="plots/17-new-tool-mapbox-screenshot.png" width=500>
+
 ## Day 20 - Water
 <img src="plots/20-water.png" width=500>
 
@@ -40,3 +49,20 @@ My contributions to the #30DayMapChallenge 2025
 ## Day 22 - Natural Earth
 <img src="plots/22-natural-earth.png" width=500>
 
+## Day 24 - Places and their names
+<img src="plots/24-places.gif" width=500>
+
+## Day 25 - Hexagons
+<img src="plots/25-hexagons.png" width=500>
+
+## Day 26 - Transport
+<img src="plots/26-transport.png" width=500>
+
+## Day 28 - Black
+<img src="plots/28-black.png" width=500>
+
+## Day 29 - Raster
+<img src="plots/29-raster.png" width=500>
+
+## Day 30 - Makeover
+<img src="plots/30-makeover.png" width=500>
