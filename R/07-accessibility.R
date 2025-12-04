@@ -63,7 +63,7 @@ iso_intervals <- seq(0, 30, 5)
 
 # Available profiles
 ors_profile()
-profiles <- c("cycling-regular", "driving-car")
+profiles <- c("cycling-regular", "driving-car", "foot-walking" )
 
 df_isochrones <- map(
   profiles, 
@@ -97,7 +97,8 @@ df_isochrones <- df_isochrones |>
     profile_label = case_match(
       profile,
       "cycling-regular" ~ "Bicycle", 
-      "driving-car"     ~ "Car"
+      "driving-car"     ~ "Car",
+      "foot-walking"    ~ "Foot"
     )
   )
 
@@ -161,4 +162,4 @@ p <- ggplot() +
     legend.key.height = unit(2, "mm"),
     plot.margin = margin(0, 4, 2, 4)
   )
-ggsave(here("plots", "07-accessibility.png"), width = 6, height = 4.5)
+ggsave(here("plots", "07-accessibility.png"), width = 7.5, height = 4.5)
