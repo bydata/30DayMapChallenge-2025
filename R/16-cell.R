@@ -128,23 +128,23 @@ ggplot() +
     ) +
   annotate(
     GeomTextBox,
-    x = st_bbox(country_shape)["xmin"], 
+    x = st_bbox(country_shape)["xmin"] - 9000, 
     y = st_bbox(country_shape)["ymax"] - 80000,
     # label = "The Pig Belt\nin Lower\nSaxony",
     label = "Almost 60% of pigs in Germany are found in
     Lower Saxony and North Rhine-Westphalia",
-    width = 0.26,
+    width = 0.3,
     family = "Source Sans Pro", fontface = "italic",
-    size = 2.5, hjust = 0, lineheight = 0.9,
+    size = 2.25, hjust = 0, lineheight = 0.9,
     fill = NA, box.size = 0, box.padding = unit(0, "mm")
   ) +
   annotate(
     GeomCurve,
-    x = st_bbox(country_shape)["xmin"] + 35000, 
+    x = st_bbox(country_shape)["xmin"] + 30000, 
     xend = st_bbox(country_shape)["xmin"] + 60000, 
-    y = st_bbox(country_shape)["ymax"] - 140000,
+    y = st_bbox(country_shape)["ymax"] - 120000,
     yend = st_bbox(country_shape)["ymax"] - 250000,
-    linewidth = 0.3, arrow = arrow(angle = 25, length = unit(1, "mm")),
+    linewidth = 0.25, arrow = arrow(angle = 25, length = unit(1, "mm")),
     curvature = 0.5
   ) +
   labs(
