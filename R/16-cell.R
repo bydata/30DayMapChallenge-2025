@@ -148,7 +148,7 @@ ggplot() +
     curvature = 0.5
   ) +
   labs(
-    title = "The Pig Belt of Germany",
+    title = "The German Pig Belt",
     subtitle = "Number of pigs per 100 hectares of agricultural land in 2020",
     caption = plot_caption,
     size = "Number of pigs"
