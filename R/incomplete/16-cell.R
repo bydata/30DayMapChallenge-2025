@@ -2,9 +2,11 @@ library(tidyverse)
 library(sf)
 library(terra)
 library(tidyterra)
+library(ggtext)
 library(here)
 
 #' Source: https://agraratlas.statistikportal.de/#
+#' https://www.theguardian.com/environment/2022/jul/26/how-germany-pig-belt-got-too-big-lower-saxony
 
 url_pigs <- "https://www.wcs.nrw.de/stba/agraratlas?SERVICE=WCS&VERSION=1.0.0&REQUEST=GetCoverage&COVERAGE=K03_Schweinedichte_2020&CRS=EPSG:3035&BBOX=4030000,2680000,4675000,3555000&WIDTH=2000&HEIGHT=2000&FORMAT=GeoTIFF"
 raster_pigs <- rast(url_pigs)
@@ -35,9 +37,6 @@ names(raster_cattle_clean) <- "class"
 table(values(raster_pigs_clean))
 table(values(raster_cattle_clean))
 
-
-# Definition of classes
-#' Anzahl Schweine je 100 Hektar landwirtschaftlich genutzter Fläche 2020 in einem Raster mit 5 km Weite
 
 pig_classes <- tibble(
   class = 1:5,
@@ -90,16 +89,24 @@ summary(raster_cattle_clean)
 table(values(raster_cattle_clean))
 
 
-
 # Background shape 
 country_shape <- rnaturalearth::ne_countries(scale = 50, country = "Germany")
 st_crs(country_shape)
 country_shape <- st_transform(country_shape, crs = 3035)
-plot_caption <- "Source: Atlas Agrarstatistik Deutschland. Visualization: Ansgar Wolsing"
+st_bbox(country_shape)
 
-
+# Style elements
 bgcolor <- "#F6F6F6"
 country_bgcolor <- "#E5E5DE"
+plot_caption <- "Source: Atlas Agrarstatistik Deutschland. Visualization: Ansgar Wolsing"
+
+custom_theme <- theme_void(base_family = "Source Sans Pro", paper = bgcolor) +
+  theme(
+    legend.key.height = unit(5, "mm"),
+    plot.margin = margin(6, 6, 6, 6),
+    plot.title = element_text(family = "Source Sans Pro SemiBold", size = 18),
+    plot.caption = ggtext::element_textbox(hjust = 0, size = 9)
+  )
 
 # Pigs
 ggplot() +
@@ -119,16 +126,34 @@ ggplot() +
     breaks = pig_classes$class_center,
     labels = pig_classes$label
     ) +
+  annotate(
+    GeomTextBox,
+    x = st_bbox(country_shape)["xmin"], 
+    y = st_bbox(country_shape)["ymax"] - 80000,
+    # label = "The Pig Belt\nin Lower\nSaxony",
+    label = "Almost 60% of pigs in Germany are found in
+    Lower Saxony and North Rhine-Westphalia",
+    width = 0.26,
+    family = "Source Sans Pro", fontface = "italic",
+    size = 2.5, hjust = 0, lineheight = 0.9,
+    fill = NA, box.size = 0, box.padding = unit(0, "mm")
+  ) +
+  annotate(
+    GeomCurve,
+    x = st_bbox(country_shape)["xmin"] + 35000, 
+    xend = st_bbox(country_shape)["xmin"] + 60000, 
+    y = st_bbox(country_shape)["ymax"] - 140000,
+    yend = st_bbox(country_shape)["ymax"] - 250000,
+    linewidth = 0.3, arrow = arrow(angle = 25, length = unit(1, "mm")),
+    curvature = 0.5
+  ) +
   labs(
-    title = "",
+    title = "The Pig Belt of Germany",
     subtitle = "Number of pigs per 100 hectares of agricultural land in 2020",
     caption = plot_caption,
     size = "Number of pigs"
   ) +
-  theme_void(base_family = "Gill Sans", paper = bgcolor) +
-  theme(
-    legend.key.height = unit(5, "mm")
-  )
+  custom_theme
 ggsave(here("plots", "16-cell-pigs.png"), width = 5, height = 5)
 
 
@@ -151,14 +176,11 @@ ggplot() +
     labels = cattle_classes$label
     ) +
   labs(
-    title = "",
+    title = "Regional patterns of cattle farming",
     subtitle = "Number of cattle per 100 hectares of agricultural land in 2020",
     caption = plot_caption,
     size = "Number of cattle"
   ) +
   guides(size = guide_legend()) + 
-  theme_void(base_family = "Gill Sans", paper = bgcolor) +
-  theme(
-    legend.key.height = unit(5, "mm")
-  )
+  custom_theme
 ggsave(here("plots", "16-cell-cattle.png"), width = 5, height = 5)
