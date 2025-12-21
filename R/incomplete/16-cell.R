@@ -1,6 +1,5 @@
-library(ggplot2)
+library(tidyverse)
 library(sf)
-library(dplyr)
 library(terra)
 library(tidyterra)
 library(here)
@@ -42,6 +41,13 @@ table(values(raster_cattle_clean))
 
 pig_classes <- tibble(
   class = 1:5,
+  class_center = c(
+    12.5,
+    162,
+    450,
+    750,
+    1050
+  ),
   label = c(
     "\U2264 25",
     "25-299",
@@ -51,8 +57,22 @@ pig_classes <- tibble(
   )
 )
 
+summary(raster_pigs_clean)
+for (i in seq_along(pig_classes$class)) {
+    raster_pigs_clean[raster_pigs_clean == pig_classes$class[i]] <- pig_classes$class_center[i]
+}
+summary(raster_pigs_clean)
+table(values(raster_pigs_clean))
+
 cattle_classes <- tibble(
   class = 1:5,
+   class_center = c(
+    25,
+    75,
+    125,
+    175,
+    250
+  ),
   label = c(
     "\U2264 50",
     "50-99",
@@ -62,29 +82,49 @@ cattle_classes <- tibble(
   )
 )
 
+summary(raster_cattle_clean)
+for (i in seq_along(cattle_classes$class)) {
+    raster_cattle_clean[raster_cattle_clean == cattle_classes$class[i]] <- cattle_classes$class_center[i]
+}
+summary(raster_cattle_clean)
+table(values(raster_cattle_clean))
+
+
 
 # Background shape 
 country_shape <- rnaturalearth::ne_countries(scale = 50, country = "Germany")
 st_crs(country_shape)
 country_shape <- st_transform(country_shape, crs = 3035)
+plot_caption <- "Source: Atlas Agrarstatistik Deutschland. Visualization: Ansgar Wolsing"
+
+
+bgcolor <- "#F6F6F6"
+country_bgcolor <- "#E5E5DE"
 
 # Pigs
-bgcolor <- "#F6F6F6"
 ggplot() +
   geom_sf(
     data = country_shape,
-    fill = "#E5E5DE", linewidth = 0
+    fill = country_bgcolor, linewidth = 0
   ) +
   stat_spatraster(
     data = raster_pigs_clean,
     geom = "point",
-    aes(size = round(after_stat(value), 0)),
+    aes(size = floor(after_stat(value))),
     fill = "red", col = "white", shape = 21, stroke = 0.2,
-    maxcell = 2500
+    maxcell = 3000
   ) +
   scale_size_continuous(
     range = c(0.75, 2.5),
-    labels = pig_classes$label) +
+    breaks = pig_classes$class_center,
+    labels = pig_classes$label
+    ) +
+  labs(
+    title = "",
+    subtitle = "Number of pigs per 100 hectares of agricultural land in 2020",
+    caption = plot_caption,
+    size = "Number of pigs"
+  ) +
   theme_void(base_family = "Gill Sans", paper = bgcolor) +
   theme(
     legend.key.height = unit(5, "mm")
@@ -93,22 +133,30 @@ ggsave(here("plots", "16-cell-pigs.png"), width = 5, height = 5)
 
 
 # Kettle
-bgcolor <- "#F6F6F6"
 ggplot() +
   geom_sf(
     data = country_shape,
-    fill = "#E5E5DE", linewidth = 0
+    fill = country_bgcolor, linewidth = 0
   ) +
   stat_spatraster(
     data = raster_cattle_clean,
     geom = "point",
-    aes(size = round(after_stat(value), 0)),
+    aes(size = ceiling(after_stat(value))),
     fill = "blue", col = "white", shape = 21, stroke = 0.2,
-    maxcell = 2500
+    maxcell = 3000
   ) +
   scale_size_continuous(
     range = c(0.75, 2.5),
-    labels = cattle_classes$label) +
+    breaks = cattle_classes$class_center,
+    labels = cattle_classes$label
+    ) +
+  labs(
+    title = "",
+    subtitle = "Number of cattle per 100 hectares of agricultural land in 2020",
+    caption = plot_caption,
+    size = "Number of cattle"
+  ) +
+  guides(size = guide_legend()) + 
   theme_void(base_family = "Gill Sans", paper = bgcolor) +
   theme(
     legend.key.height = unit(5, "mm")
