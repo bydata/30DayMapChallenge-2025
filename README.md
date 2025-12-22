@@ -29,11 +29,17 @@ My contributions to the #30DayMapChallenge 2025
 ## Day 11 - Minimal map
 <img src="plots/11-minimal-map.png" width=500>
 
+## Day 13 - 10 minute map
+<img src="plots/13-10-minute-map.png" width=500>
+
 ## Day 14 - OpenStreetMap
 <img src="plots/14-osm.png" width=500>
 
 ## Day 15 - Fire
 <img src="plots/15-fire.png" width=500>
+
+## Day 16 - Cell
+<img src="plots/16-fire.png" width=500>
 
 ## Day 17 - A new tool
 <img src="plots/17-new-tool-mapbox-screenshot.png" width=500>
@@ -48,6 +54,9 @@ My contributions to the #30DayMapChallenge 2025
 
 ## Day 22 - Natural Earth
 <img src="plots/22-natural-earth.png" width=500>
+
+## Day 23 - Process
+<img src="plots/23-process.png" width=500>
 
 ## Day 24 - Places and their names
 <img src="plots/24-places.gif" width=500>
